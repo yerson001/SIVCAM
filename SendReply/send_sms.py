@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-account_sid = os.getenv('AC44ccb9137fb482535fbeeca61aba1f19')
-auth_token = os.getenv('860eb8ac9c926043cadf91bf5458ee1d')
+account_sid = os.getenv('')
+auth_token = os.getenv('')
 client = Client(account_sid, auth_token)
 
 message = client.messages \
