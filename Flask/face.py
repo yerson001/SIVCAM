@@ -9,6 +9,10 @@ if not os.path.exists(Datos):
     print('Carpeta creada: ',Datos)
     os.makedirs(Datos)
 
+
+
+
+
 config = {
   'apiKey': "AIzaSyD9nFNbz0PhUxQJUm4uNh8lgXec14Y65zo",
   'authDomain': "rpiimage-b6062.firebaseapp.com",
