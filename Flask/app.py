@@ -45,7 +45,7 @@ storage = firebase.storage()
 app = Flask(__name__)
 camera=cv2.VideoCapture(0)
 
-global rec
+global rec,out
 rec=0
 flag = 1
 
@@ -134,6 +134,14 @@ def sms():
     #resp.message(str(body))
     count=0
     #	🔔 💡
+    if  request.form.get('rec') == 'Start/Stop Recording':
+            global rec, out
+            rec= not rec
+            if(rec):
+                fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+                out = cv2.VideoWriter(f"ga.mp4", fourcc, 20.0, (640, 480))
+            elif(rec==False):
+                out.release()
     if body == 'foto':
         #resp.message("--------sisisisiisis------")
         message = Message()
@@ -174,18 +182,7 @@ def sms():
 def video():
     return Response(generate_frames(),mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route("/requests",methods=['GET','POST'])
-def acciones():
-    body = request.values.get('Body')
-    if request.method == 'POST':
-        if  request.form.get('rec') == 'Start/Stop Recording':
-            global rec, out
-            rec= not rec
-            if(rec):
-                fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-                out = cv2.VideoWriter(f"ga.mp4", fourcc, 20.0, (640, 480))
-            elif(rec==False):
-                out.release()
+        
 if __name__=="__main__":
     app.run(debug=True)
 cv2.destroyAllWindows()
