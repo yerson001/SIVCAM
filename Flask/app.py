@@ -32,8 +32,8 @@ config = {
 
 
 
-account_sid = 'AC44ccb9137fb482535fbeeca61aba1f19'
-auth_token = '85f433a5341b2c61aed7de08048f7f82'
+account_sid = ''
+auth_token = ''
 client = Client(account_sid, auth_token)
 
 
