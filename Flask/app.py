@@ -5,6 +5,7 @@ from twilio.twiml.messaging_response import Body, Media, Message, MessagingRespo
 import numpy as np
 import imutils
 import os
+from twilio.rest import Client
 import pyrebase
 import cv2
 import time
@@ -27,6 +28,15 @@ config = {
   'appId': "1:902149485764:web:bac0d04cf2ac2844164591",
   'measurementId': "G-FTQM2CJE4N"
 }
+
+
+
+account_sid = 'AC44ccb9137fb482535fbeeca61aba1f19'
+auth_token = '85f433a5341b2c61aed7de08048f7f82'
+client = Client(account_sid, auth_token)
+
+
+
 firebase = pyrebase.initialize_app(config)
 storage = firebase.storage()
 
@@ -34,33 +44,34 @@ storage = firebase.storage()
 app = Flask(__name__)
 camera=cv2.VideoCapture(0)
 
-grabando = -1
 
-def Video(duracion):
-    global grabando
-    grabando = 2
-    print("-------fun grabando-----------")
-    """
-    global grabando
-    cap = cv2.VideoCapture(0)
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter('output.avi',fourcc, 20.0, (640,480))
 
-    start_time = time.time()
-    while( int(time.time() - start_time) < duracion ):
-        ret, frame = cap.read()
-        if ret==True:
-            frame = cv2.flip(frame,0)
-            out.write(frame)
-            #cv2.imshow('frame',frame)
-        #else:
-        #    break
-    print("-------enviar mensage-----------")
-    """
+flag = 1
+
+def detector(frame,frame1):
+    diff = cv2.absdiff(frame,frame1)
+    gray = cv2.cvtColor(diff,cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray,(5,5),0)
+    _,thresh = cv2.threshold(blur,20,255,cv2.THRESH_BINARY)
+    dilated = cv2.dilate(thresh,None,iterations=3)
+    #cv2.imshow("dd",dilated)
+    contours,_ = cv2.findContours(dilated,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    #cv2.drawContours(frame,contours,-1,(0,0,255),2)
+    
+    for cnt in contours:
+        if cv2.contourArea(cnt) < 20000:
+            continue
+        x, y ,w , h = cv2.boundingRect(cnt)
+        cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
+        
+        return 1
+    return 0
+
     
 def generate_frames():
     send_sms = 0
     global grabando
+    global flag
     while True:
         success,frame=camera.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -84,29 +95,19 @@ def generate_frames():
         for (x, y, w, h) in Cuerpo:
             cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
             
-            #video(10)
-            #send_sms += 1
-        if grabando == 1:
-            #Video(10)
-            start_time = time.time()
-            grabando=2
-        if grabando==2:
-            fourcc = cv2.VideoWriter_fourcc(*'XVID')
-            out = cv2.VideoWriter('resultado.mp4',fourcc, 20.0, (640,480))
-            if( int(time.time() - start_time) < 5):#capture_duration
-                ret, frame = camera.read()
-                if ret==True:
-                    #frame = cv2.flip(frame,0)
-                    out.write(frame)
-                    #cv2.imshow('frame',frame)
-                else:
-                    break
-            else:
-                grabando=-1
-        #send_sms = send_sms + 1
-        #if send_sms == 100:
-        #    print("----------------se detecto una imagen-------------------------")
-            
+ 
+        _,frame2 = camera.read()
+        _,frame1 = camera.read()
+        i = detector(frame2,frame1)
+        if i == 1 and flag:
+            #print("se detecto movimiento")
+            flag = 0
+            message = client.messages.create(
+                                from_='whatsapp:+14155238886',
+                                #media_url = url,
+                                body='Se detecto movimiento 😜',
+                                to='whatsapp:+51963828458'
+                            )
 
         if not success:
             break
