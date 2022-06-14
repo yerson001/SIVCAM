@@ -9,6 +9,7 @@ from twilio.rest import Client
 import pyrebase
 import cv2
 import time
+import time
 Datos = 'p'
 if not os.path.exists(Datos):
     print('Carpeta creada: ',Datos)
@@ -44,8 +45,8 @@ storage = firebase.storage()
 app = Flask(__name__)
 camera=cv2.VideoCapture(0)
 
-
-
+global rec,out
+rec=0
 flag = 1
 
 def detector(frame,frame1):
@@ -74,6 +75,7 @@ def generate_frames():
     global flag
     while True:
         success,frame=camera.read()
+        time.sleep(0.05)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         faces = faceCascade.detectMultiScale(
@@ -94,7 +96,12 @@ def generate_frames():
         
         for (x, y, w, h) in Cuerpo:
             cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
-            
+
+        if(rec):
+            out.write(frame)
+
+            frame= cv2.putText(cv2.flip(frame,1),"Grabando", (0,25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255),4)
+            frame=cv2.flip(frame,1)
  
         _,frame2 = camera.read()
         _,frame1 = camera.read()
@@ -108,7 +115,6 @@ def generate_frames():
                                 body='Se detecto movimiento 😜',
                                 to='whatsapp:+51963828458'
                             )
-
         if not success:
             break
         else:
@@ -128,6 +134,14 @@ def sms():
     #resp.message(str(body))
     count=0
     #	🔔 💡
+    if  request.form.get('rec') == 'Start/Stop Recording':
+            global rec, out
+            rec= not rec
+            if(rec):
+                fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+                out = cv2.VideoWriter(f"ga.mp4", fourcc, 20.0, (640, 480))
+            elif(rec==False):
+                out.release()
     if body == 'foto':
         #resp.message("--------sisisisiisis------")
         message = Message()
@@ -161,15 +175,14 @@ def sms():
     else:
         resp.message("COMANDOS QUE PUEDES ENVIAR: foto[Captura una imagen con la cámara 📷 ] \n video[Transmision en vivo 🎥🔴]")
 
-    #print(body)
-    #render_template('index.html')
+    
     return Response(str(resp),mimetype="application/xml")
 
 @app.route('/video')
 def video():
     return Response(generate_frames(),mimetype='multipart/x-mixed-replace; boundary=frame')
 
-
+        
 if __name__=="__main__":
     app.run(debug=True)
 cv2.destroyAllWindows()
