@@ -6,10 +6,13 @@
 
   <body>
     <h1>Live streaming</h1>
+    <form method="post" action="{{url_for('acciones')}}">
+      <input type="submit" value="Start/Stop Recording" name="rec" />
+    </form>
     <div>
         <img src="{{ url_for('video') }}" width="50%"/>
     </div>
-    <button> grabar </button>
+    
             
     </body>
 
