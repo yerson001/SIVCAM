@@ -159,7 +159,7 @@ def sms():
     elif body == 'video':
         resp.message("https://be93-179-6-164-232.ngrok.io/video")
     else:
-        resp.message("COMANDOS QUE PUEDES ENVIAR: foto[Captura una imagen con la cámara 📷 ] \n video[Transmision en vivo 🎥🔴]")
+        resp.message('https://firebasestorage.googleapis.com/v0/b/rpiimage-b6062.appspot.com/o/app.jpeg?alt=media&token=8ac2de03-2c71-4519-b31f-d380807e24e6')
 
     #print(body)
     #render_template('index.html')
